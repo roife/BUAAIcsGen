@@ -22,12 +22,9 @@ def eventSetGen(table):
         for j in range(2, 8): # row
             if(table.row_values(j)[i] != ''):
                 cell = table.row_values(j)[i]
-                print(cell,'\n')
                 # classNum = len(re.findall(r'第(([0-9]+)|，)+节', cell))
                 classSet = re.split(r'节</br>', cell)
                 for classi in classSet:
-                    if(classi[-1] != '节'):
-                        classi.join('节')
                     blockNum = len(re.findall(r'\[[0-9]*-[0-9]*]|\[[0-9]*]', classi))
                     eventWeekday = i-1
                     eventTimeSet = list(map(int, (re.findall(r'([0-9]+)[节|，]', classi))))
@@ -40,8 +37,8 @@ def eventSetGen(table):
                         else:
                             eventEndWeek = re.search(r'-.*]', classi).group()[1:-1]
                         eventPlace = re.search(r'周.*\n', classi).group()[1:-1]
-                        # print(classi, '\n', eventTimeSet, '\n')
-                        eventDescription = re.sub("(</br>)|\\n", " ", classi)
+                        eventDescription = re.sub(r"(</br>)|(\n)", " ", classi)
+                        if(eventDescription[-1] != '节'): eventDescription += '节'
                         event = [eventName, eventBeginWeek, eventEndWeek,
                                  beginTime[eventTimeSet[0]], endTime[eventTimeSet[-1]], eventPlace, eventWeekday, eventDescription]
                         eventSet.append(event)
@@ -57,7 +54,8 @@ def eventSetGen(table):
                             else:
                                 subEventEndWeek = re.search(r'-.*]', subEventWeek[k]).group()[1:-1]
                             eventPlace = re.search(r'周.*\n', subEventPlace[k]).group()[1:-1]
-                            eventDescription = re.sub("(</br>)|\\n", " ", classi)
+                            eventDescription = re.sub(r"(</br>)|(\n)", " ", classi)
+                            if(eventDescription[-1] != '节'): eventDescription += '节'
                             subEvent = [subEventName, subEventBeginWeek, subEventEndWeek,
                                         beginTime[eventTimeSet[0]], endTime[eventTimeSet[-1]], eventPlace, eventWeekday, eventDescription]
                             eventSet.append(subEvent)
@@ -95,7 +93,7 @@ def payloadGen(eventSet):
             event[i]['DTSTART']+'\nDTEND;TZID=Asia/Shanghai:'+event[i]['DTEND']+'\nRRULE:FREQ=WEEKLY;COUNT=' + \
             str(eventLastWeek[i])+'\nSUMMARY:'+eventSet[i][0] + \
             '\nLOCATION:'+eventSet[i][5]+'\nDESCRIPTION:'+eventSet[i][7] + \
-            '\nBEGIN:VALARM'+'\nTRIGGER:-PT15M'+'\nREPEAT:1'+'\nDURATION:PT1M'+'\nEND:VALARM'+'\nEND:VEVENT'
+            '\nBEGIN:VALARM'+'\nTRIGGER:-PT60M'+'\nREPEAT:1'+'\nDURATION:PT1M'+'\nEND:VALARM'+'\nEND:VEVENT'
         payload += vEvent
     payload += '\nEND:VCALENDAR'
     # print(payload)
