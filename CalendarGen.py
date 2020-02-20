@@ -7,7 +7,7 @@ data = xlrd.open_workbook('timetable.xls', 'rb')
 ics = open('timetable.ics', 'w', encoding='utf-8')
 table = data.sheets()[0]
 
-termBeginDate = datetime.date(2019, 9, 2)
+termBeginDate = datetime.date(2020, 2, 23)
 
 def eventSetGen(table):
     eventSet = []
