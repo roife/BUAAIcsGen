@@ -1,6 +1,4 @@
 # Introduction
-A Python script for generating *.ics files, which can be automatically loaded to various calendar applications, from the *.xls form downloaded from jiaowu.buaa.edu.cn.
+A python script that transforms timetable.xls (downloaded from jiaowu.buaa.edu.cn) into timetable.ics file (the iCalendar file), which can be recognized by various calendar apps.
 
-This project is based on https://github.com/stefan0us/CalendarGen.
-
-TODO: Some classes with several teachers like `走进软件` can't be analyzed correctly.
+The work is based on https://github.com/stefan0us/CalendarGen.

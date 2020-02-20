@@ -3,12 +3,11 @@ import re
 import datetime
 
 
-data = xlrd.open_workbook('schedule.xls', 'rb')
-ics = open('schedule.ics', 'w', encoding='utf-8')
+data = xlrd.open_workbook('timetable.xls', 'rb')
+ics = open('timetable.ics', 'w', encoding='utf-8')
 table = data.sheets()[0]
 
 termBeginDate = datetime.date(2019, 9, 2)
-
 
 def eventSetGen(table):
     eventSet = []
@@ -18,60 +17,74 @@ def eventSetGen(table):
     endTime = {1: '0845', 2: '0935', 3: '1035', 4: '1125', 5: '1215',
                6: '1445', 7: '1535', 8: '1635', 9: '1725', 10:'1815',
                11:'1945', 12:'2035', 13:'2125', 14:'2215'}
-    for i in range(2, 8): # column
+    for i in range(2, 9): # column
         for j in range(2, 8): # row
             if(table.row_values(j)[i] != ''):
                 cell = table.row_values(j)[i]
                 # classNum = len(re.findall(r'第(([0-9]+)|，)+节', cell))
-                classSet = re.split(r'节</br>', cell)
-                for classi in classSet:
-                    blockNum = len(re.findall(r'\[[0-9]*-[0-9]*]|\[[0-9]*]', classi))
+                print(cell,'\n');
+                classSet = re.split(r'节</br>', cell) # 每个单元格可能有多门课, 以 节</br> 为标志分割
+
+                for classi in classSet: # 对于每个格子里的每节课
+                    blockNum = len(re.findall(r'\[[0-9]*-[0-9]*]|\[[0-9]*]', classi)) # 一节课分多周
                     eventWeekday = i-1
-                    eventTimeSet = list(map(int, (re.findall(r'([0-9]+)[节|，]', classi))))
+                    eventTimeSet = list(map(int, (re.findall(r'第(.*)节', classi)[0].split('，')))) # 获取上课时间(第几节)
+                    print(re.findall(r'第(.*)节', classi)[0].split('，'))
+
                     if(blockNum == 1):
-                        eventName = re.match(r'.*</br>', classi).group()[:-5]
-                        eventBeginWeek = re.search(r'\[[0-9]*', classi).group()[1:]
+                        eventName = re.match(r'.*</br>', classi).group()[:-5] # 课程名称以</br>分割
+
                         # [WEEK] and [BEGIN-END]
-                        if(re.search(r'-.*]', classi) is None):
-                            eventEndWeek = re.search(r'\[.*]', classi).group()[1:-1]
+                        eventBeginWeek = re.search(r'\[[0-9]*', classi).group()[1:]
+                        if(re.search(r'-.*]', classi) is None): # 针对单周 [5]
+                            eventEndWeek = re.search(r'\[.*]', classi).group()[1:-1] # 得到 5
                         else:
-                            eventEndWeek = re.search(r'-.*]', classi).group()[1:-1]
-                        eventPlace = re.search(r'周.*\n', classi).group()[1:-1]
-                        eventDescription = re.sub(r"(</br>)|(\n)", " ", classi)
+                            eventEndWeek = re.search(r'-.*]', classi).group()[1:-1] # 得到 1-16
+
+                        eventPlace = re.search(r'周.*\n', classi).group()[1:-1] # 课程地点格式为 周\n地点
+                        eventDescription = re.sub(r"(</br>)|(\n)", " ", classi) # description 存储???
+
                         if(eventDescription[-1] != '节'): eventDescription += '节'
+
                         event = [eventName, eventBeginWeek, eventEndWeek,
                                  beginTime[eventTimeSet[0]], endTime[eventTimeSet[-1]], eventPlace, eventWeekday, eventDescription]
                         eventSet.append(event)
                     else:
-                        subEventWeek = (re.findall(r'\[[0-9]*-[0-9]*\]|\[[0-9]*]', classi))
-                        subEventPlace = (re.findall(r'周.*\n', classi))
+                        # 一节课分多周, 格式为 人[]周，人[]周
+                        subEventWeek = (re.findall(r'\[[0-9]*-[0-9]*\]|\[[0-9]*]', classi)) # 分割每个老师的课
+                        # subEventPlace = (re.findall(r'周.*\n', classi))
+
+                        print(eventTimeSet, '\n');
+
                         for k in range(blockNum):
                             subEventName = classi[:classi.find('</br>')]
-                            subEventBeginWeek = re.match(r'\[[0-9]*', subEventWeek[k]).group()[1:]
+
                             # [WEEK] and [BEGIN-END]
+                            subEventBeginWeek = re.match(r'\[[0-9]*', subEventWeek[k]).group()[1:]
                             if(re.search(r'-.*]', subEventWeek[k]) is None):
                                 subEventEndWeek = re.search(r'\[.*]', subEventWeek[k]).group()[1:-1]
                             else:
                                 subEventEndWeek = re.search(r'-.*]', subEventWeek[k]).group()[1:-1]
-                            eventPlace = re.search(r'周.*\n', subEventPlace[k]).group()[1:-1]
+
+                            # eventPlace = re.search(r'周.*\n', subEventPlace[k]).group()[1:-1]
+                            eventPlace = re.search(r'周.*\n', classi).group()[-1]
                             eventDescription = re.sub(r"(</br>)|(\n)", " ", classi)
+
                             if(eventDescription[-1] != '节'): eventDescription += '节'
+
                             subEvent = [subEventName, subEventBeginWeek, subEventEndWeek,
                                         beginTime[eventTimeSet[0]], endTime[eventTimeSet[-1]], eventPlace, eventWeekday, eventDescription]
                             eventSet.append(subEvent)
     return eventSet
 
-
 eventSet = eventSetGen(table)
 print(eventSet)
-
 
 def calcBeginDate(beginDate, intervalWeek, weekday):
     interval = datetime.timedelta(
         weeks=int(intervalWeek-1))+datetime.timedelta(days=weekday-1)
     ansDate = ''.join(re.split('-', str(beginDate+interval)))
     return ansDate
-
 
 def payloadGen(eventSet):
     eventBeginDateSet = list(
