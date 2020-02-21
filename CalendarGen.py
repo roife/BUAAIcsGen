@@ -7,7 +7,7 @@ data = xlrd.open_workbook('timetable.xls', 'rb')
 ics = open('timetable.ics', 'w', encoding='utf-8')
 table = data.sheets()[0]
 
-termBeginDate = datetime.date(2020, 2, 23)
+termBeginDate = datetime.date(2020, 2, 24)
 
 def eventSetGen(table):
     eventSet = []
@@ -106,7 +106,7 @@ def payloadGen(eventSet):
             event[i]['DTSTART']+'\nDTEND;TZID=Asia/Shanghai:'+event[i]['DTEND']+'\nRRULE:FREQ=WEEKLY;COUNT=' + \
             str(eventLastWeek[i])+'\nSUMMARY:'+eventSet[i][0] + \
             '\nLOCATION:'+eventSet[i][5]+'\nDESCRIPTION:'+eventSet[i][7] + \
-            '\nBEGIN:VALARM'+'\nTRIGGER:-PT60M'+'\nREPEAT:1'+'\nDURATION:PT1M'+'\nEND:VALARM'+'\nEND:VEVENT'
+            '\nBEGIN:VALARM'+'\nTRIGGER:-PT30M'+'\nREPEAT:1'+'\nDURATION:PT1M'+'\nEND:VALARM'+'\nEND:VEVENT'
         payload += vEvent
     payload += '\nEND:VCALENDAR'
     # print(payload)
