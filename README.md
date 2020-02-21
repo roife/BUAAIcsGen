@@ -3,6 +3,9 @@ A python script that transforms timetable.xls (downloaded from jiaowu.buaa.edu.c
 
 The work is based on https://github.com/stefan0us/CalendarGen.
 
+# Requirement
+- `pip3 install xldr`
+
 # Warning and known issue
 You need to check before importing the timetable.ics file to your calendar.
 
