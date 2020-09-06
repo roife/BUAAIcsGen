@@ -7,7 +7,7 @@ data = xlrd.open_workbook('timetable.xls', 'rb')
 ics = open('timetable.ics', 'w', encoding='utf-8')
 table = data.sheets()[0]
 
-termBeginDate = datetime.date(2020, 2, 24)
+termBeginDate = datetime.date(2020, 9, 7)
 
 def eventSetGen(table):
     eventSet = []
@@ -26,6 +26,9 @@ def eventSetGen(table):
                 classSet = re.split(r'节</br>', cell) # 每个单元格可能有多门课, 以 节</br> 为标志分割
 
                 for classi in classSet: # 对于每个格子里的每节课
+                    if classi.endswith('节') == False:
+                        classi = classi + '节'
+                    # print(classi)
                     blockNum = len(re.findall(r'\[[0-9]*-[0-9]*\]|\[[0-9]*\]', classi)) # 一节课分多周
                     eventWeekday = i-1
                     eventTimeSet = list(map(int, (re.findall(r'第(.*)节', classi)[0].split('，')))) # 获取上课时间(第几节)
@@ -74,18 +77,6 @@ def eventSetGen(table):
                                         beginTime[eventTimeSet[0]], endTime[eventTimeSet[-1]], eventPlace, eventWeekday, eventDescription]
                             eventSet.append(subEvent)
     return eventSet
-
-#def unique(events):
-#    i = 0
-#    while i < len(events):
-#        j = i + 1
-#        while j < len(events):
-#            if events[i][:6] == events[j][:6]:
-#                print("fuck")
-#                events[i][7] = events[i][7] + "\n" + events[j][7]
-#                del events[j]
-#            else: j = j+1
-#        i = i + 1
 
 eventSet = eventSetGen(table)
 #unique(eventSet)
