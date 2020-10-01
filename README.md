@@ -2,7 +2,7 @@
 A python script that transforms timetable.xls (downloaded from jiaowu.buaa.edu.cn) into timetable.ics file (the iCalendar file), which can be recognized by various calendar apps.
 
 # Requirement
-- `pip3 install xldr`
+- `pip3 install xlrd`
 
 # Warning and known issue
 You need to check before importing the timetable.ics file to your calendar.
