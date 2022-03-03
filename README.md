@@ -1,10 +1,9 @@
-# Introduction
-A python script that transforms timetable.xls (downloaded from jiaowu.buaa.edu.cn) into timetable.ics file (the iCalendar file), which can be recognized by various calendar apps.
+# 介绍
 
-# Requirement
-- `pip3 install xlrd`
+一个从教务自动爬取课表，并转换成 ICS 文件的小工具
 
-# Warning and known issue
-You need to check before importing the timetable.ics file to your calendar.
+# 使用说明
 
-Unsupported classes: "电子设计基础训练", "走进软件".
+1. 在脚本中注释位置填写学号和密码
+2. 运行脚 `ics_gen`
+3. 在脚本同目录下会生成一个 `classes.ics`，可以将其导入到日历中（一般双击即可，也可以发送给手机使用）
