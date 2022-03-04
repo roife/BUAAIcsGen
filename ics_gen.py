@@ -44,7 +44,6 @@ def get_class_by_week(year: str, term: str, week: str, eai_sess: str) -> list[di
     }
 
     r = requests.post(class_url, data=data, headers=header)
-    r.encoding = "UTF-8"
     days = r.json()["d"]["weekdays"]
     classes = r.json()["d"]["classes"]
     classes = merge_adjacent_classes(sorted(classes, key=lambda klass: int(klass["weekday"]) * 100 + int(klass["lessons"][0:1])))
@@ -115,5 +114,5 @@ if __name__ == "__main__":
         week_str = str(week)
         weekly_classes.extend(get_class_by_week(year_str, term_str, week_str, eai_sess))
 
-    with open("classes.ics", "w+") as f:
+    with open("classes.ics", "w+", encoding="utf-8") as f:
         f.write(generate_ics(f"北航 {year_str} 第 {term_str} 学期课程表", weekly_classes))
