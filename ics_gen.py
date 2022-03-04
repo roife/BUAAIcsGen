@@ -44,6 +44,7 @@ def get_class_by_week(year: str, term: str, week: str, eai_sess: str) -> list[di
     }
 
     r = requests.post(class_url, data=data, headers=header)
+    r.encoding = "UTF-8"
     days = r.json()["d"]["weekdays"]
     classes = r.json()["d"]["classes"]
     classes = merge_adjacent_classes(sorted(classes, key=lambda klass: int(klass["weekday"]) * 100 + int(klass["lessons"][0:1])))
