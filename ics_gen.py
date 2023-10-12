@@ -20,14 +20,14 @@ def login(session):
         'execution': get_login_token(session),
         'type': 'username_password',
         '_eventId': 'submit',
-        'submit': '登陆'
+        'submit': '登录'
     }
     r = session.post(LOGIN_URL, data=formdata, allow_redirects=False)
     location = r.headers.get('Location')
     if location:
         return location
     else:
-        exit('登陆失败，请自行排错')
+        exit('登录失败，请自行排错')
 
 def get_eai_sess() -> str:
     url = 'https://app.buaa.edu.cn/uc/wap/login'
