@@ -1,12 +1,6 @@
 import requests
 from datetime import datetime
-from urllib import parse
-import time
-import requests
 from bs4 import BeautifulSoup
-from urllib.parse import quote
-import re
-from datetime import datetime
 
 username = "" # 学号
 password = "" # 密码
