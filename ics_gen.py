@@ -1,24 +1,55 @@
 import requests
 from datetime import datetime
-from urllib import parse
+from bs4 import BeautifulSoup
 
 username = "" # 学号
 password = "" # 密码
 
-def get_eai_sess() -> str:
-    login_url = "https://app.buaa.edu.cn/uc/wap/login/check"
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36",
-    }
-    data = parse.urlencode({
-        "username": username,
-        "password": password,
-    })
+BASE_URL = 'http://app.buaa.edu.cn/'
+LOGIN_URL = 'https://sso.buaa.edu.cn/login'
 
-    r = requests.post(login_url, data=data, headers=headers)
+def get_login_token(session):
+    r = session.get("https://sso.buaa.edu.cn/login?service=https%3A%2F%2Fapp.buaa.edu.cn%2Fa_buaa%2Fapi%2Fcas%2Findex%3Fredirect%3D%252Fsite%252Fcenter%252Fpersonal%26from%3Dwap%26login_from%3D&noAutoRedirect=1")
+    soup = BeautifulSoup(r.content, 'html.parser')
+    return soup.find('input', {'name': 'execution'})['value']
+
+def login(session):
+    formdata = {
+        'username': username,
+        'password': password,
+        'execution': get_login_token(session),
+        'type': 'username_password',
+        '_eventId': 'submit',
+        'submit': '登录'
+    }
+    r = session.post(LOGIN_URL, data=formdata, allow_redirects=False)
+    location = r.headers.get('Location')
+    if location:
+        return location
+    else:
+        exit('登录失败，请自行排错')
+
+def get_eai_sess() -> str:
+    url = 'https://app.buaa.edu.cn/uc/wap/login'
+    r = requests.get(url, allow_redirects=False)
     cookies = requests.utils.dict_from_cookiejar(r.cookies)
     return cookies["eai-sess"]
+
+def verify_eai_sess():
+    session = requests.session()
+    url = login(session)
+    eai_sess = get_eai_sess()
+
+    hearders ={
+        'cookie': eai_sess
+    }
+    r = requests.get(url,headers=hearders,allow_redirects=False)
+    cookies = requests.utils.dict_from_cookiejar(r.cookies)
+    date = r.headers.get('date')
+    if date:
+        return cookies["eai-sess"]
+    else:
+        exit('以上内容出错，请自行排错')
 
 def merge_adjacent_classes(classes: list) -> list:
     i = 1
@@ -104,10 +135,9 @@ END:VEVENT"""
 if __name__ == "__main__":
     year = datetime.now().year
     month = datetime.now().month
-
     year_str = f"{year-1}-{year}" if month < 7 else f"{year}-{year+1}"
     term_str = "2" if month < 7 else "1"
-    eai_sess = get_eai_sess()
+    eai_sess = verify_eai_sess()
 
     weekly_classes = []
     for week in range(1, 20):
