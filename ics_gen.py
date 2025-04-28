@@ -59,7 +59,8 @@ def merge_adjacent_classes(classes: list) -> list:
     while i < len(classes):
         try:
             if (classes[i]["course_name"] == classes[i-1]["course_name"] and 
-                "course_time" in classes[i] and "course_time" in classes[i-1]):
+                "course_time" in classes[i] and "course_time" in classes[i-1] and
+                classes[i]["weekday"] == classes[i-1]["weekday"]):
                 
                 classes[i-1]["lessons"] += f'{classes[i]["lessons"]}'
                 time_parts_i = classes[i]["course_time"].split("-")
