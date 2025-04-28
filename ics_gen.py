@@ -52,14 +52,29 @@ def verify_eai_sess():
         exit('以上内容出错，请自行排错')
 
 def merge_adjacent_classes(classes: list) -> list:
+    if not classes:
+        return classes
+        
     i = 1
     while i < len(classes):
-        if classes[i]["course_name"] == classes[i-1]["course_name"]:
-            classes[i-1]["lessons"] += f'{classes[i]["lessons"]}'
-            classes[i-1]["course_time"] = f'{classes[i-1]["course_time"].split("～")[0]}～{classes[i]["course_time"].split("～")[1]}'
-            classes.pop(i)
-        else:
+        try:
+            if (classes[i]["course_name"] == classes[i-1]["course_name"] and 
+                "course_time" in classes[i] and "course_time" in classes[i-1]):
+                
+                classes[i-1]["lessons"] += f'{classes[i]["lessons"]}'
+                time_parts_i = classes[i]["course_time"].split("-")
+                time_parts_i1 = classes[i-1]["course_time"].split("-")
+                
+                if len(time_parts_i) == 2 and len(time_parts_i1) == 2:
+                    classes[i-1]["course_time"] = f'{time_parts_i1[0]}-{time_parts_i[1]}'
+                classes.pop(i)
+            else:
+                i += 1
+        except (KeyError, IndexError) as e:
+            print(f"Warning: Error processing class at index {i}: {e}")
             i += 1
+            continue
+            
     return classes
 
 def get_class_by_week(year: str, term: str, week: str, eai_sess: str) -> list[dict]:
@@ -77,12 +92,18 @@ def get_class_by_week(year: str, term: str, week: str, eai_sess: str) -> list[di
     r = requests.post(class_url, data=data, headers=header)
     days = r.json()["d"]["weekdays"]
     classes = r.json()["d"]["classes"]
+    
+    # 添加调试信息
+    print(f"Debug - Week {week} classes data:")
+    for c in classes:
+        print(f"Course: {c['course_name']}, Time: {c['course_time']}, Lessons: {c['lessons']}")
+    
     classes = merge_adjacent_classes(sorted(classes, key=lambda klass: int(klass["weekday"]) * 100 + int(klass["lessons"][0:1])))
 
     for klass in classes:
         klass["date"] = days[int(klass["weekday"]) - 1].replace("-", "")
-        klass["start"] = klass["course_time"].split("～")[0].replace(":", "")
-        klass["end"] = klass["course_time"].split("～")[1].replace(":", "")
+        klass["start"] = klass["course_time"].split("-")[0].replace(":", "")
+        klass["end"] = klass["course_time"].split("-")[1].replace(":", "")
         klass["lessons"] = ", ".join([klass["lessons"][i:i+2] for i in range(0, len(klass["lessons"]), 2)])
 
     return classes
