@@ -2,8 +2,8 @@ import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-username = "" # 学号
-password = "" # 密码
+username = "zy2406104" # 学号
+password = "A00Wisgood" # 密码
 
 BASE_URL = 'http://app.buaa.edu.cn/'
 LOGIN_URL = 'https://sso.buaa.edu.cn/login'
@@ -112,6 +112,7 @@ def get_class_by_week(year: str, term: str, week: str, eai_sess: str) -> list[di
 def generate_ics(title: str, classes: list) -> str:
     ics_payload = f"""BEGIN:VCALENDAR
 VERSION:2.0
+PRODID:-//DreamForge//CN
 X-WR-CALNAME:{title}
 CALSCALE:GREGORIAN
 BEGIN:VTIMEZONE
