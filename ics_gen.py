@@ -56,7 +56,7 @@ def merge_adjacent_classes(classes: list) -> list:
     while i < len(classes):
         if classes[i]["course_name"] == classes[i-1]["course_name"]:
             classes[i-1]["lessons"] += f'{classes[i]["lessons"]}'
-            classes[i-1]["course_time"] = f'{classes[i-1]["course_time"].split("～")[0]}～{classes[i]["course_time"].split("～")[1]}'
+            classes[i-1]["course_time"] = f'{classes[i-1]["course_time"].split("-")[0]}-{classes[i]["course_time"].split("-")[1]}'
             classes.pop(i)
         else:
             i += 1
@@ -81,8 +81,8 @@ def get_class_by_week(year: str, term: str, week: str, eai_sess: str) -> list[di
 
     for klass in classes:
         klass["date"] = days[int(klass["weekday"]) - 1].replace("-", "")
-        klass["start"] = klass["course_time"].split("～")[0].replace(":", "")
-        klass["end"] = klass["course_time"].split("～")[1].replace(":", "")
+        klass["start"] = klass["course_time"].split("-")[0].replace(":", "")
+        klass["end"] = klass["course_time"].split("-")[1].replace(":", "")
         klass["lessons"] = ", ".join([klass["lessons"][i:i+2] for i in range(0, len(klass["lessons"]), 2)])
 
     return classes
